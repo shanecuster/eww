@@ -15,8 +15,8 @@
 .cell-head { margin-bottom: 10px; }
 
 .cell-label {
-  font-size: 15px;
-  letter-spacing: 1px;
+  font-size: 28px;
+  letter-spacing: 0;
   color: #7f849c;
   font-weight: 700;
 }
@@ -41,3 +41,15 @@
 }
 .dot.on { background-color: #a6e3a1; }
 .dot.off { background-color: #45475a; }
+
+.bar-chart {
+  min-height: 40px;
+  margin-top: 8px;
+}
+
+.bar {
+  background-color: #a6e3a1;
+  min-width: 8px;
+  border-radius: 2px 2px 0 0;
+  margin: 0 2px;
+}

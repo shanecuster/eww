@@ -1,11 +1,10 @@
-;; ===== Base cell widget =====
 (defwidget stat-cell [label value ?sub ?dot]
-  (box :class "cell" :orientation "v" :space-evenly false
-    (box :class "cell-head" :orientation "h"
-      (label :class "cell-label" :text label :halign "start" :hexpand true)
+  (box :class "cell" :orientation "v" :space-evenly false :spacing 6 :hexpand true :vexpand true :valign "center"
+    (box :class "cell-head" :orientation "h" :hexpand true :space-evenly false
+      (label :class "cell-label" :text label :halign "start" :hexpand true :truncate false)
       (box :class "dot ${dot ?: 'off'}" :visible {dot != ""}))
-    (label :class "big-num" :text value :halign "start")
-    (label :class "sub-row" :text {sub ?: ""} :halign "start" :visible {sub != ""})))
+    (label :class "big-num" :text value :halign "start" :hexpand true :wrap true :truncate false)
+    (label :class "sub-row" :text {sub ?: ""} :halign "start" :hexpand true :visible {sub != ""} :wrap true :truncate false)))
 
 ;; ===== Dashboard grid =====
 
@@ -15,29 +14,27 @@
 (defpoll sensors_json :interval "3s"
   "~/.config/eww/scripts/sensors.sh")
 
-(defwidget stat-cell [label value ?sub ?dot]
-  (box :class "cell" :orientation "v" :space-evenly false :spacing 6 :hexpand true :vexpand true :valign "center"
-    (box :class "cell-head" :orientation "h"
-      (label :class "cell-label" :text label :halign "start" :hexpand true :wrap true)
-      (box :class "dot ${dot ?: 'off'}" :visible {dot != ""}))
-    (label :class "big-num" :text value :halign "start" :wrap true)
-    (label :class "sub-row" :text {sub ?: ""} :halign "start" :visible {sub != ""} :wrap true)))
+(defpoll github_json :interval "15m"
+  "~/.config/eww/scripts/github_stats.sh")
+
+(defwidget github-bars [days]
+  (box :orientation "h" :space-evenly true :class "bar-chart"
+    (for day in days
+      (box :class "bar" :valign "end" :height {day * 8 + 2}))))
 
 (defwidget dashboard []
   (box :class "panel" :orientation "v" :space-evenly true :hexpand true :vexpand true
     (box :orientation "h" :space-evenly true :hexpand true :vexpand true
-      (stat-cell :label "GITHUB" :value "-- pushes/7d" :sub "waiting for data")
+      (box :orientation "v" :hexpand true :vexpand true
+        (stat-cell :label "GITHUB" :value "${jq(github_json, '.pushes')}" :sub "contributions this year")
+        (github-bars :days {jq(github_json, '.days')}))
       (stat-cell :label "PROXMOX" :value "-- / --" :sub "VMs / LXC" :dot "off")
       (stat-cell :label "DISK · SERVER" :value "--%" :sub "not connected")
-      (stat-cell :label "CPU / GPU" 
-        :value "${jq(sensors_json, '.cpu')}°C"
-        :sub "GPU ${jq(sensors_json, '.gpu_junction')}° · fan ${jq(sensors_json, '.gpu_fan')}rpm"))
+      (stat-cell :label "CPU / GPU" :value "${jq(sensors_json, '.cpu')}°C" :sub "GPU ${jq(sensors_json, '.gpu_junction')}° · fan ${jq(sensors_json, '.gpu_fan')}rpm"))
     (box :orientation "h" :space-evenly true :hexpand true :vexpand true
       (stat-cell :label "UPTIME" :value "-- / --" :sub "PC / server")
       (stat-cell :label "NTFY" :value "no messages" :dot "off")
-      (stat-cell :label "PRINTABLES" 
-        :value "${jq(printables_json, '.downloads')}"
-        :sub "${jq(printables_json, '.makes')} makes · ${jq(printables_json, '.followers')} followers · ${jq(printables_json, '.following')} following")	
+      (stat-cell :label "PRINTABLES" :value "${jq(printables_json, '.downloads')}" :sub "${jq(printables_json, '.makes')} makes · ${jq(printables_json, '.followers')} followers · ${jq(printables_json, '.following')} following")
       (stat-cell :label "GOATCOUNTER" :value "-- / --" :sub "tech / sports"))))
 
 (defwindow sensors
