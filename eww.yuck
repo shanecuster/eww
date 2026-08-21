@@ -37,7 +37,7 @@
       (stat-cell :label "NTFY" :value "no messages" :dot "off")
       (stat-cell :label "PRINTABLES" 
         :value "${jq(printables_json, '.downloads')}"
-        :sub "downloads · ${jq(printables_json, '.makes')} makes")
+        :sub "${jq(printables_json, '.makes')} makes · ${jq(printables_json, '.followers')} followers · ${jq(printables_json, '.following')} following")	
       (stat-cell :label "GOATCOUNTER" :value "-- / --" :sub "tech / sports"))))
 
 (defwindow sensors
