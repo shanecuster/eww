@@ -10,12 +10,13 @@
 .cell {
   padding: 16px 24px;
   min-width: 0;
+  border-left: 3px solid transparent;
 }
 
 .cell-head { margin-bottom: 10px; }
 
 .cell-label {
-  font-size: 28px;
+  font-size: 20px;
   letter-spacing: 0;
   color: #7f849c;
   font-weight: 700;
@@ -42,17 +43,35 @@
 .dot.on { background-color: #a6e3a1; }
 .dot.off { background-color: #45475a; }
 
+/* ===== Bar charts (GitHub, CPU) ===== */
 .bar-chart {
   min-height: 40px;
   margin-top: 8px;
 }
 
 .bar {
-  background-color: #a6e3a1;
   min-width: 8px;
   border-radius: 2px 2px 0 0;
   margin: 0 2px;
 }
+.bar-green { background-color: #a6e3a1; }
+.bar-red { background-color: #eba0ac; }
+
+/* ===== Disk usage fill bar ===== */
+.fill-track {
+  background-color: #313244;
+  border-radius: 4px;
+  min-height: 10px;
+  min-width: 200px;
+  margin-top: 8px;
+}
+.fill-bar {
+  background-color: #fab387;
+  border-radius: 4px;
+  min-height: 10px;
+}
+
+/* ===== NTFY feed ===== */
 .feed-line {
   padding-bottom: 8px;
   border-bottom: 1px dashed #313244;
@@ -84,3 +103,27 @@
   color: #7f849c;
   margin-top: 2px;
 }
+
+/* ===== Per-cell accent colors ===== */
+.accent-green { border-left-color: #a6e3a1; }
+.accent-green .big-num { color: #a6e3a1; }
+
+.accent-blue { border-left-color: #89b4fa; }
+.accent-blue .big-num { color: #89b4fa; }
+
+.accent-peach { border-left-color: #fab387; }
+.accent-peach .big-num { color: #fab387; }
+
+.accent-red { border-left-color: #eba0ac; }
+.accent-red .big-num { color: #eba0ac; }
+
+.accent-mauve { border-left-color: #cba6f7; }
+.accent-mauve .big-num { color: #cba6f7; }
+
+.accent-teal { border-left-color: #94e2d5; }
+
+.accent-yellow { border-left-color: #f9e2af; }
+.accent-yellow .big-num { color: #f9e2af; }
+
+.accent-sky { border-left-color: #89dceb; }
+.accent-sky .big-num { color: #89dceb; }

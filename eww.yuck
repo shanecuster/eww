@@ -1,13 +1,13 @@
-(defwidget stat-cell [label value ?sub ?dot]
-  (box :class "cell" :orientation "v" :space-evenly false :spacing 6 :hexpand true :vexpand true :valign "center"
+(defwidget stat-cell [label value ?sub ?dot ?accent]
+  (box :class "cell accent-${accent ?: 'default'}" :orientation "v" :space-evenly false :spacing 6 :hexpand true :vexpand true :valign "center"
     (box :class "cell-head" :orientation "h" :hexpand true :space-evenly false
       (label :class "cell-label" :text label :halign "start" :hexpand true :truncate false)
       (box :class "dot ${dot ?: 'off'}" :visible {dot != ""}))
     (label :class "big-num" :text value :halign "start" :hexpand true :wrap true :truncate false)
     (label :class "sub-row" :text {sub ?: ""} :halign "start" :hexpand true :visible {sub != ""} :wrap true :truncate false)))
 
-(defwidget dual-stat-cell [label value1 label1 value2 label2]
-  (box :class "cell" :orientation "v" :space-evenly false :spacing 6 :hexpand true :vexpand true :valign "center"
+(defwidget dual-stat-cell [label value1 label1 value2 label2 ?accent]
+  (box :class "cell accent-${accent ?: 'default'}" :orientation "v" :space-evenly false :spacing 6 :hexpand true :vexpand true :valign "center"
     (box :class "cell-head" :orientation "h" :hexpand true :space-evenly false
       (label :class "cell-label" :text label :halign "start" :hexpand true :truncate false))
     (box :orientation "h" :space-evenly true :hexpand true
@@ -26,13 +26,23 @@
       (label :class "msg-time" :text {item.time} :halign "start"))))
 
 (defwidget ntfy-cell []
-  (box :class "cell" :orientation "v" :space-evenly false :spacing 10 :hexpand true :vexpand true
+  (box :class "cell accent-teal" :orientation "v" :space-evenly false :spacing 10 :hexpand true :vexpand true
     (box :class "cell-head" :orientation "h" :hexpand true :space-evenly false
       (label :class "cell-label" :text "NTFY" :halign "start" :hexpand true :truncate false)
       (box :class "dot on"))
     (box :orientation "v" :spacing 10 :hexpand true
       (for item in {ntfy_feed}
         (ntfy-line :item item)))))
+
+(defwidget github-bars [days]
+  (box :orientation "h" :space-evenly true :class "bar-chart"
+    (for day in days
+      (box :class "bar bar-green" :valign "end" :height {day * 8 + 2}))))
+
+(defwidget cpu-bars [history]
+  (box :orientation "h" :space-evenly true :class "bar-chart"
+    (for t in history
+      (box :class "bar bar-red" :valign "end" :height {t - 20}))))
 
 ;; ===== Dashboard grid =====
 
@@ -54,32 +64,47 @@
 (defpoll ntfy_feed :interval "10s"
   "~/.config/eww/scripts/ntfy-feed.sh")
 
-(defwidget github-bars [days]
-  (box :orientation "h" :space-evenly true :class "bar-chart"
-    (for day in days
-      (box :class "bar" :valign "end" :height {day * 8 + 2}))))
+(defpoll proxmox_json :interval "1m"
+  "~/.config/eww/scripts/proxmox-stats.sh")
+
+(defpoll server_uptime :interval "1m"
+  "~/.config/eww/scripts/proxmox-uptime.sh")
 
 (defwidget dashboard []
   (box :class "panel" :orientation "v" :space-evenly true :hexpand true :vexpand true
     (box :orientation "h" :space-evenly true :hexpand true :vexpand true
-      (box :orientation "v" :hexpand true :vexpand true
-        (stat-cell :label "GITHUB" :value "${jq(github_json, '.pushes')}" :sub "contributions this year")
-        (github-bars :days {jq(github_json, '.days')}))
-      (stat-cell :label "PROXMOX" :value "-- / --" :sub "VMs / LXC" :dot "off")
-      (stat-cell :label "DISK · SERVER" :value "--%" :sub "not connected")
-      (stat-cell :label "CPU / GPU" :value "${jq(sensors_json, '.cpu')}°C" :sub "GPU ${jq(sensors_json, '.gpu_junction')}° · fan ${jq(sensors_json, '.gpu_fan')}rpm"))
-    (box :orientation "h" :space-evenly true :hexpand true :vexpand true
       (dual-stat-cell :label "UPTIME" 
         :value1 "${pc_uptime}" :label1 "PC"
-        :value2 "--" :label2 "server")
+        :value2 "${server_uptime}" :label2 "server" :accent "mauve")
+      (dual-stat-cell :label "PROXMOX" 
+        :value1 "${jq(proxmox_json, '.vm_running')}/${jq(proxmox_json, '.vm_total')}" :label1 "VMs"
+        :value2 "${jq(proxmox_json, '.lxc_running')}/${jq(proxmox_json, '.lxc_total')}" :label2 "LXC"
+        :accent "blue")
+      (dual-stat-cell :label "DISK · SERVER" 
+        :value1 "${jq(proxmox_json, '.disk_pct')}%" :label1 "disk (local-lvm)"
+        :value2 "${jq(proxmox_json, '.ram_pct')}%" :label2 "RAM"
+        :accent "peach")
+      (box :orientation "v" :space-evenly false :hexpand true :vexpand true
+        (dual-stat-cell :label "CPU / GPU"
+          :value1 "${jq(sensors_json, '.cpu')}°C" :label1 "PC · GPU ${jq(sensors_json, '.gpu_junction')}°"
+          :value2 "${jq(proxmox_json, '.cpu_pct')}%" :label2 "server load"
+          :accent "red")
+        (cpu-bars :history {jq(sensors_json, '.cpu_history')})))
+    (box :orientation "h" :space-evenly true :hexpand true :vexpand true
+      (box :orientation "v" :space-evenly false :hexpand true :vexpand true
+        (dual-stat-cell :label "GITHUB"
+          :value1 "${jq(github_json, '.pushes')}" :label1 "contributions"
+          :value2 "${jq(github_json, '.clones')}" :label2 "clones"
+          :accent "green")
+        (github-bars :days {jq(github_json, '.days')}))
       (ntfy-cell)
-      (stat-cell :label "PRINTABLES" :value "${jq(printables_json, '.downloads')}" :sub "${jq(printables_json, '.makes')} makes · ${jq(printables_json, '.followers')} followers · ${jq(printables_json, '.following')} following")
+      (stat-cell :label "PRINTABLES" :value "${jq(printables_json, '.downloads')}" :sub "${jq(printables_json, '.makes')} makes · ${jq(printables_json, '.followers')} followers · ${jq(printables_json, '.following')} following" :accent "yellow")
       (dual-stat-cell :label "GOATCOUNTER" 
         :value1 "${jq(goatcounter_json, '.tech')}" :label1 "tech"
-        :value2 "${jq(goatcounter_json, '.sports')}" :label2 "sports"))))
+        :value2 "${jq(goatcounter_json, '.sports')}" :label2 "sports" :accent "sky"))))
 
 (defwindow sensors
-  :monitor 1
+  :monitor 0
   :geometry (geometry :x "0px" :y "0px" :width "2608px" :height "720px" :anchor "bottom left")
   :stacking "fg"
   (dashboard))
