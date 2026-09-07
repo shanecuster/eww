@@ -19,10 +19,10 @@
         (label :class "sub-row" :text label2 :halign "start" :hexpand true :truncate false)))))
 
 (defwidget ntfy-line [item]
-  (box :orientation "h" :spacing 10 :class "feed-line" :hexpand true
+  (box :orientation "h" :spacing 10 :class "feed-line" :hexpand true :space-evenly false
     (label :class "tag tag-${item.topic}" :text {item.topic})
     (box :orientation "v" :hexpand true
-      (label :class "msg-text" :text {item.message} :halign "start" :hexpand true :truncate false :wrap true)
+      (label :class "msg-text" :text {item.message} :halign "start" :hexpand true :truncate true)
       (label :class "msg-time" :text {item.time} :halign "start"))))
 
 (defwidget ntfy-cell []
