@@ -104,7 +104,7 @@
         :value2 "${jq(goatcounter_json, '.sports')}" :label2 "sports" :accent "sky"))))
 
 (defwindow sensors
-  :monitor 0
+  :monitor 1
   :geometry (geometry :x "0px" :y "0px" :width "2608px" :height "720px" :anchor "bottom left")
   :stacking "fg"
   (dashboard))
